@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Build latest resource pack version
         run: |
-          tar --exclude='./.git' --exclude='./oresia.zip' --exclude='./.github' -cf oresia.zip .
+          zip -r oresia.zip ./* -x './.git' -x './oresia.zip' -x './.github'
           mkdir build
           mv oresia.zip build/oresia.zip
       - name: Create SHA-1 hash
