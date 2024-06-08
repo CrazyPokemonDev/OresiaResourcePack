@@ -37,7 +37,7 @@ jobs:
           mkdir build
           mv oresia.zip build/oresia.zip
       - name: Create SHA-1 hash
-        run: echo "sha1=$(sha1sum build/oresia.zip)" >> "$GITHUB_ENV"
+        run: echo "sha1=$(sha1sum build/oresia.zip | awk '{print $1}')" >> "$GITHUB_ENV"
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
