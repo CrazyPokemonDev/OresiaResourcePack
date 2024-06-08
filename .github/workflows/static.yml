@@ -37,7 +37,8 @@ jobs:
           mkdir build
           mv oresia.zip build/oresia.zip
       - name: Create SHA-1 hash
-        run: echo "sha1=$(sha1sum build/oresia.zip | awk '{print $1}')" >> "$GITHUB_ENV"
+        id: hash
+        run: echo "sha1=$(sha1sum build/oresia.zip | awk '{print $1}')" >> "$GITHUB_OUTPUT"
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
@@ -57,4 +58,4 @@ jobs:
           sudo chmod 600 ./private.key
           echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
       - name: Update server resource pack hash
-        run: ssh -i ./private.key mc@flommc sed -i -e "s/\(resource-pack-sha1=\).*/\1$SHA1/g" oresia/server.properties
+        run: ssh -i ./private.key mc@flommc sed -i -e "s/\(resource-pack-sha1=\).*/\1${{ steps.hash.outputs.sha1 }}/g" oresia/server.properties
