@@ -58,4 +58,7 @@ jobs:
           sudo chmod 600 ./private.key
           echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
       - name: Update server resource pack hash
-        run: ssh -i ./private.key mc@flommc sed -i -e "s/\(resource-pack-sha1=\).*/\1${{ steps.hash.outputs.sha1 }}/g" oresia/server.properties
+        run: |
+          scp -i ./private.key mc@flommc:~/oresia/server.properties server.properties
+          sed -i -e 's/\(resource-pack-sha1=\).*/\1${{ steps.hash.outputs.sha1 }}/g' server.properties
+          scp -i ./private.key server.properties mc@flommc:~/oresia/server.properties
