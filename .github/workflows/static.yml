@@ -1,0 +1,57 @@
+# Simple workflow for deploying static content to GitHub Pages
+name: Deploy static content to Pages
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Single deploy job since we're just deploying
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: intranet
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build latest resource pack version
+        run: tar --exclude='./.git' --exclude='./oresia.zip' -cf oresia.zip .
+      - name: Create SHA-1 hash
+        run: echo "sha1=$(sha1sum oresia.zip)" >> "$GITHUB_ENV"
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'oresia.zip'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Set up SSH credentials
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_PRIVATE_KEY" > ./private.key
+          sudo chmod 600 ./private.key
+          echo "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Update server resource pack hash
+        run: ssh -i ./private.key mc@flommc sed -i -e "s/\(resource-pack=\).*/\1$SSH1/g" oresia/server.properties
